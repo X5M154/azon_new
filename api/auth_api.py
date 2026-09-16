@@ -1,6 +1,6 @@
-
 from config.hosts import AUTH_URL
 from requester.custom_requester import CustomRequester
+
 
 class AuthAPI(CustomRequester):
     """Клиент Auth API: регистрация, вход, профиль."""
@@ -21,10 +21,9 @@ class AuthAPI(CustomRequester):
             "POST", self.LOGIN_ENDPOINT, json=credentials, expected_status=expected_status
         )
 
-
     def authenticate(self, user_creds):
         email, password = user_creds
         response = self.login_user({"email": email, "password": password})
         token = response.json()["access_token"]
-        self._update_session_headers(Authorization=f'Bearer {token}')
+        self._update_session_headers(Authorization=f"Bearer {token}")
         return response

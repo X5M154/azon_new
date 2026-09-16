@@ -2,7 +2,6 @@ from config.hosts import PAYMENT_URL
 from requester.custom_requester import CustomRequester
 
 
-
 class PaymentAPI(CustomRequester):
     """Клиент Payment API: заказы и платежи."""
 

@@ -1,6 +1,7 @@
 from config.credentials import MANAGER_INVITE, ADMIN_INVITE
 from data.users import UserData
 
+
 class TestAuth:
 
     def test_register_and_login(self, api_manager):
@@ -54,10 +55,3 @@ class TestAuth:
 
         response = api_manager.auth_api.register_user(user_data, expected_status=403)
         assert response.json()["error"]["code"] == "INVALID_INVITE_CODE"
-
-
-
-
-
-
-

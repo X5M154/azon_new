@@ -6,14 +6,16 @@ from config.credentials import MANAGER_INVITE, ADMIN_INVITE
 from data.products import ProductData
 from data.users import UserData
 
+
 @pytest.fixture()
 def api_manager():
     session = requests.Session()
     yield ApiManager(session)
     session.close()
 
+
 @pytest.fixture()
-def manager_manager(registered_manager):
+def managers_api(registered_manager):
     session = requests.Session()
     manager = ApiManager(session)
 
@@ -26,11 +28,13 @@ def manager_manager(registered_manager):
     yield manager
     session.close()
 
+
 @pytest.fixture
 def registered_user(api_manager):
     user_data = UserData.registration_data()
     response = api_manager.auth_api.register_user(user_data)
     return {**user_data, "id": response.json()["id"]}
+
 
 @pytest.fixture
 def registered_manager(api_manager):
@@ -40,6 +44,7 @@ def registered_manager(api_manager):
     assert response.json()["role"] == "MANAGER"
     return {**user_data, "id": response.json()["id"]}
 
+
 @pytest.fixture
 def registered_admin(api_manager):
     user_data = UserData.registration_data(invite_code=ADMIN_INVITE)
@@ -48,6 +53,7 @@ def registered_admin(api_manager):
     assert response.json()["role"] == "ADMIN"
     return {**user_data, "id": response.json()["id"]}
 
+
 @pytest.fixture(scope="function")
 def authenticated_user(api_manager):
     user_data = UserData.registration_data()
@@ -55,6 +61,7 @@ def authenticated_user(api_manager):
 
     api_manager.auth_api.authenticate((user_data["email"], user_data["password"]))
     return {**user_data, "id": register_response.json()["id"]}
+
 
 @pytest.fixture(scope="function")
 def authenticated_manager(api_manager):
@@ -67,6 +74,7 @@ def authenticated_manager(api_manager):
     assert me_response.json()["email"] == user_data["email"]
     return {**user_data, "id": register_response.json()["id"]}
 
+
 @pytest.fixture(scope="function")
 def authenticated_admin(api_manager):
     user_data = UserData.registration_data(invite_code=ADMIN_INVITE)
@@ -77,12 +85,14 @@ def authenticated_admin(api_manager):
     assert me_response.json()["email"] == user_data["email"]
     return {**user_data, "id": register_response.json()["id"]}
 
+
 @pytest.fixture
 def category_id(api_manager):
     categories = api_manager.categories_api.get_categories().json()
     assert categories
 
     return categories[0]["id"]
+
 
 @pytest.fixture
 def created_product(api_manager, authenticated_admin, category_id):
@@ -93,14 +103,8 @@ def created_product(api_manager, authenticated_admin, category_id):
 
     yield product
 
-
     try:
         api_manager.products_api.delete_product(product["id"])
     except AssertionError:
         response = api_manager.products_api.delete_product(product["id"], expected_status=404)
         assert response.json()["error"]["code"] == "PRODUCT_NOT_FOUND"
-
-
-
-
-

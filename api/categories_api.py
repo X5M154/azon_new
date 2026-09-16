@@ -1,6 +1,7 @@
 from config.hosts import PRODUCT_URL
 from requester.custom_requester import CustomRequester
 
+
 class CategoriesAPI(CustomRequester):
 
     CATEGORIES_ENDPOINT = "/api/v1/categories"

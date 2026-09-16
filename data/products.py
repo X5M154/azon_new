@@ -1,5 +1,6 @@
 from utils.data_generator import DataGenerator
 
+
 class ProductData:
 
     @staticmethod
@@ -10,7 +11,7 @@ class ProductData:
             "description": DataGenerator.generate_description(),
             "price": str(DataGenerator.generate_price()),
             "stock": DataGenerator.generate_stock(),
-            "category_id": category_id
+            "category_id": category_id,
         }
         return product_data
 
@@ -25,8 +26,5 @@ class ProductData:
 
     @staticmethod
     def update_product_price():
-        update_price = {
-            "price": str(DataGenerator.generate_price())
-        }
+        update_price = {"price": str(DataGenerator.generate_price())}
         return update_price
-

@@ -1,9 +1,9 @@
 import uuid
 from faker import Faker
 from decimal import Decimal
-import random
 
 fake = Faker("en_US")
+
 
 class DataGenerator:
 
@@ -21,7 +21,7 @@ class DataGenerator:
 
     @staticmethod
     def generate_product_name():
-        return fake.word()
+        return f"{fake.word().capitalize()}-{uuid.uuid4().hex[:8]}"
 
     @staticmethod
     def generate_sku():
@@ -39,5 +39,4 @@ class DataGenerator:
 
     @staticmethod
     def generate_stock():
-        return fake.random_int(min=1, max=1000000) # min=0 надо или нет?
-
+        return fake.random_int(min=1, max=1000000)

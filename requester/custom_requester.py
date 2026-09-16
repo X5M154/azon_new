@@ -4,6 +4,7 @@ DEFAULT_TIMEOUT = 10
 
 logger = logging.getLogger("azon_tests")
 
+
 class CustomRequester:
     """Базовый класс всех API-клиентов: отправка запросов и проверка статуса"""
     def __init__(self, session, base_url):

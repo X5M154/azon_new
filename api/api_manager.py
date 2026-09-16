@@ -4,6 +4,7 @@ from api.products_api import ProductsAPI
 from api.user_api import UserAPI
 from api.categories_api import CategoriesAPI
 
+
 class ApiManager:
     """Единая точка доступа ко всем API стенда."""
 

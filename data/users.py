@@ -1,5 +1,6 @@
 from utils.data_generator import DataGenerator
 
+
 class UserData:
     """Object Mother для тел запросов Auth API."""
 
