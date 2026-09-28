@@ -40,3 +40,7 @@ class DataGenerator:
     @staticmethod
     def generate_stock():
         return fake.random_int(min=1, max=1000000)
+
+    @staticmethod
+    def generate_review_text():
+        return fake.sentence(nb_words=19)

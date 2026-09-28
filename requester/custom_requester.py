@@ -1,4 +1,5 @@
 import logging
+from pydantic import BaseModel
 
 DEFAULT_TIMEOUT = 10
 
@@ -14,6 +15,9 @@ class CustomRequester:
     def send_request(self, method, endpoint, expected_status=200, **kwargs):
         url = f"{self.base_url}{endpoint}"
         kwargs.setdefault("timeout", DEFAULT_TIMEOUT)
+
+        if isinstance(kwargs.get("json"), BaseModel):
+            kwargs["json"] = kwargs["json"].model_dump(mode="json", exclude_none=True)
 
         response = self.session.request(method, url, **kwargs)
         self._log_request_and_response(response)
