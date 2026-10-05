@@ -1,8 +1,9 @@
 import pytest
 from data.products import ProductData
 from models.products import ProductPage
+from utils.marks import requires_admin
 
-pytestmark = [pytest.mark.products]
+pytestmark = [pytest.mark.products, requires_admin]
 
 @pytest.fixture
 def out_of_stock_product(admin_manager, category_id):

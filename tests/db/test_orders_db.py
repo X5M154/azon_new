@@ -1,8 +1,11 @@
 import pytest
+
+from data.orders import OrderData
 from data.products import ProductData
+from models.orders import PaymentResponse, OrderResponse
 from utils.marks import requires_db, requires_admin
 
-pytestmark = [pytest.mark.db, requires_db, requires_admin]
+pytestmark = [pytest.mark.db, pytest.mark.payment, requires_db, requires_admin]
 
 
 class TestOrdersInDB:
@@ -21,8 +24,7 @@ class TestOrdersInDB:
         assert items[0]["subtotal"] == created_product.price
 
     def test_order_item_keeps_price_snapshot(
-        self, admin_manager, created_order, created_product, db
-    ):
+        self, admin_manager, created_order, created_product, db):
         new_price = ProductData.price_data()
 
         admin_manager.products_api.update_price(created_product.id, new_price)

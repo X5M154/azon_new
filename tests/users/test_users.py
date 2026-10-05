@@ -2,8 +2,9 @@ from data.users import UserData
 import pytest
 from models.users import UserResponse
 from utils.data_generator import DataGenerator
+from utils.marks import requires_admin
 
-pytestmark = pytest.mark.users
+pytestmark = [pytest.mark.users, requires_admin]
 
 class TestUsers:
 

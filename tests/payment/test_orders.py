@@ -1,10 +1,11 @@
 import pytest
 
-from models.orders import OrdersPage
+from models.orders import OrdersPage, OrderResponse, PaymentResponse
 from data.orders import OrderData, DECLINED_CARD
 from tests.conftest import api_manager
+from utils.marks import requires_admin
 
-pytestmark = [pytest.mark.contract, pytest.mark.payment]
+pytestmark = [pytest.mark.contract, pytest.mark.payment, requires_admin]
 
 class TestOrders:
 
@@ -19,10 +20,14 @@ class TestOrders:
 
         payment_data = OrderData.payment()
 
-        api_manager.payment_api.pay_order(created_order.id, payment_data=payment_data)
+        pay = api_manager.payment_api.pay_order(created_order.id, payment_data=payment_data)
+        paid = PaymentResponse.model_validate(pay.json())
+        assert paid.status == "SUCCEEDED"
 
         response = api_manager.payment_api.get_order(created_order.id)
-        assert response.json()["status"] == "PAID"
+
+        order = OrderResponse.model_validate(response.json())
+        assert order.status == "PAID"
 
     @pytest.mark.negative
     def test_declined_card_pay(self, api_manager, created_order):
@@ -31,6 +36,11 @@ class TestOrders:
 
         response = api_manager.payment_api.pay_order(created_order.id, payment_data=payment_data, expected_status=402)
         assert response.json()["error"]["code"] == "PAYMENT_DECLINED"
+        assert response.json()["error"]["details"][0]["decline_code"] == "card_declined"
+
+        order = api_manager.payment_api.get_order(created_order.id)
+        assert order.json()["status"] == "AWAITING_PAYMENT"
+
 
     @pytest.mark.negative
     def test_payment_paid_order(self, api_manager, created_order):

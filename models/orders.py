@@ -35,7 +35,7 @@ class PaymentRequest(BaseModel):
 
     card_number: str = Field(min_length=12, max_length=19, pattern=r"^\d+$")
     card_holder: str = Field(min_length=1, max_length=100)
-    exp_month: int = Field(ge=1, le=13)
+    exp_month: int = Field(ge=1, le=12)
     exp_year: int = Field(ge=2020, le=2100)
     cvc: str = Field(min_length=3, max_length=3, pattern=r"^\d{3}$")
 

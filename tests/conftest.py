@@ -1,5 +1,7 @@
+import allure
 import pytest
 import requests
+from playwright.sync_api import expect
 
 from api.api_manager import ApiManager
 from api.auth_api import AuthAPI
@@ -17,6 +19,7 @@ from models.reviews import ReviewResponse
 from models.users import RegisteredUser, UserResponse
 from models.products import ProductResponse
 from db.db_manager import DBManager
+from pages.login_page import LoginPage
 
 
 @pytest.fixture
@@ -155,7 +158,15 @@ def created_order(api_manager, authenticated_user, created_product):
     response = api_manager.payment_api.checkout()
     assert response.json()["status"] == "AWAITING_PAYMENT"
 
-    return OrderResponse.model_validate(response.json())
+    order = OrderResponse.model_validate(response.json())
+
+    yield order
+
+    new_response = api_manager.payment_api.get_order(order.id)
+    new_order = OrderResponse.model_validate(new_response.json())
+
+    if new_order.status == "AWAITING_PAYMENT":
+        api_manager.payment_api.cancel_order(order.id)
 
 @pytest.fixture
 def created_review(api_manager, authenticated_user, created_product):
@@ -203,3 +214,67 @@ def mock_payment_api(wiremock):
     session = requests.Session()
     yield PaymentAPI(session, base_url=MOCK_URL)
     session.close()
+
+@pytest.fixture
+def mobile_page(browser, playwright):
+    """Тот же браузер, но притворяется телефоном: размер экрана, User-Agent, касания."""
+    context = browser.new_context(**playwright.devices["iPhone 13"])
+    page = context.new_page()
+
+    yield page
+
+    context.close()
+
+@pytest.fixture
+def ui_user(api_manager):
+
+    registration = UserData.registration_data()
+
+    api_manager.auth_api.register_user(registration)
+
+    return registration
+
+def _login_through_ui(page, user):
+    """Вход через форму: одинаковый и для десктопа, и для телефона."""
+    login_page = LoginPage(page).open()
+    login_page.login(user.email, user.password)
+
+    expect(login_page.profile_link).to_have_text(user.email)
+    return page
+
+@pytest.fixture
+def logged_in_page(page, ui_user):
+    """Вкладка браузера, в которой мы уже вошли в свой аккаунт."""
+    return _login_through_ui(page, ui_user)
+
+@pytest.fixture
+def logged_in_mobile_page(mobile_page, ui_user):
+    return _login_through_ui(mobile_page, ui_user)
+
+'''
+@pytest.fixture(scope="session", autouse=True)
+def configure_test_id(playwright):
+    """На проекте атрибут называется data-qa - учим get_by_test_id искать именно его."""
+    playwright.selectors.set_test_id_attribute("data-qa")
+'''
+
+@pytest.hookimpl(hookwrapper=True)
+def pytest_runtest_makereport(item, call):
+    """Упал тест в браузере - кладём в отчёт скриншот и адрес страницы."""
+    outcome = yield
+    report = outcome.get_result()
+
+    if report.when != "call" or not report.failed:
+        return
+
+    # у API-тестов страницы нет, у мобильных она называется иначе
+    page = item.funcargs.get("mobile_page") or item.funcargs.get("page")
+    if page is None:
+        return
+
+    allure.attach(
+        page.screenshot(full_page=True),
+        name="Скриншот в момент падения",
+        attachment_type=allure.attachment_type.PNG,
+    )
+    allure.attach(page.url, name="Адрес страницы", attachment_type=allure.attachment_type.TEXT)

@@ -7,7 +7,7 @@ from models.products import ProductRequest, ProductResponse
 from utils.marks import requires_admin, requires_manager
 from pydantic import ValidationError
 
-pytestmark = pytest.mark.products
+pytestmark = [pytest.mark.products, requires_admin]
 
 class TestProducts:
 

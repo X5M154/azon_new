@@ -2,9 +2,9 @@ from config.credentials import MANAGER_INVITE, ADMIN_INVITE
 from data.users import UserData
 import pytest
 from models.users import TokenPairResponse, UserResponse
+from utils.marks import requires_admin
 
-
-pytestmark = pytest.mark.auth
+pytestmark = [pytest.mark.auth, requires_admin]
 
 class TestAuth:
 

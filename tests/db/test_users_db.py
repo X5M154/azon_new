@@ -1,8 +1,8 @@
 import pytest
 
-from utils.marks import requires_db
+from utils.marks import requires_db, requires_admin
 
-pytestmark = [pytest.mark.db, pytest.mark.auth, requires_db]
+pytestmark = [pytest.mark.db, pytest.mark.auth, requires_db, requires_admin]
 
 
 class TestUsersInDB:

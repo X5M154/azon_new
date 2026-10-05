@@ -1,9 +1,9 @@
 from data.products import ProductData
 import pytest
 
-from utils.marks import requires_db
+from utils.marks import requires_db, requires_admin
 
-pytestmark = [pytest.mark.db, requires_db]
+pytestmark = [pytest.mark.db, requires_db, requires_admin]
 
 def test_cart_item_keeps_price_at_add(
     api_manager, admin_manager, authenticated_user, created_product, db):

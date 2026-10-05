@@ -12,3 +12,7 @@ __pycache__/
 .env
 temp.py
 wiremock-standalone-*.jar
+tests/ui/test_recorded.py
+allure-results/
+allure-report/
+test-results/
