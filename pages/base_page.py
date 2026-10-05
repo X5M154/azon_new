@@ -1,14 +1,10 @@
+import allure
 from playwright.sync_api import Page
 
 from config.hosts import FRONTEND_URL
 
 
 class BasePage:
-    """Общий предок всех страниц витрины.
-
-    Здесь живёт то, что одинаково везде: адрес страницы, переход на неё
-    и шапка сайта, которая нарисована на каждой странице AZON.
-    """
 
     url = "/"
 
@@ -35,14 +31,18 @@ class BasePage:
         self.page.goto(f"{FRONTEND_URL}{self.url}")
         return self
 
+    @allure.step("Переход в корзину")
     def go_to_cart(self):
         self.cart_link.click()
 
+    @allure.step("Переход на страницу с заказами")
     def go_to_orders(self):
         self.orders_link.click()
 
+    @allure.step("Переход на страницу каталога")
     def go_to_catalog(self):
         self.catalog_link.click()
 
+    @allure.step("Выход из аккаунта")
     def logout(self):
         self.logout_button.click()

@@ -33,13 +33,13 @@ class OrderPage(BasePage):
         self.decline_code = page.get_by_test_id("payment-decline-code")
         self.cancel_button = page.get_by_test_id("cancel-order-button")
 
+    @allure.step("Просмотр заказа {order_id}")
     def open_by_id(self, order_id):
         self.url = f"/orders/{order_id}"
         return self.open()
 
     @allure.step("Оплачиваем заказ картой {card_number}")
     def pay(self, card_number=SUCCESS_CARD, holder="TEST STUDENT", month="12", year="2030", cvc="123"):
-        """Оплата картой: номер карты решает, чем всё закончится (см. тестовые карты стенда)."""
         self.card_number.fill(card_number)
         self.card_holder.fill(holder)
         self.exp_month.fill(month)
@@ -47,6 +47,7 @@ class OrderPage(BasePage):
         self.cvc.fill(cvc)
         self.pay_button.click()
 
+    @allure.step("Отменяем заказ")
     def cancel(self):
         self.cancel_button.click()
 

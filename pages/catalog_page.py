@@ -4,13 +4,13 @@ from pages.base_page import BasePage
 
 
 class CatalogPage(BasePage):
-    """Главная страница витрины: каталог товаров с фильтрами и постраничной выдачей."""
 
     url = "/"
 
     def __init__(self, page):
         super().__init__(page)
 
+        self.title = page.get_by_test_id("page-title")
         self.grid = page.get_by_test_id("catalog-grid")
         self.cards = page.get_by_test_id("product-card")
         self.total = page.get_by_test_id("catalog-total")
@@ -25,8 +25,8 @@ class CatalogPage(BasePage):
         self.pagination = page.get_by_test_id("pagination")
         self.next_page_button = page.get_by_test_id("pagination-next")
 
+    @allure.step("Поиск товара {name}")
     def card(self, name):
-        """Карточка нужного товара: ищем среди всех карточек ту, где есть это название."""
         return self.cards.filter(has_text=name)
 
     @allure.step("Ищем в каталоге: {text}")
@@ -49,11 +49,16 @@ class CatalogPage(BasePage):
     def add_to_cart(self, name):
         self.card(name).get_by_test_id("add-to-cart").click()
 
+    @allure.step("Кладём в корзину товар")
+    def add_first_to_cart(self):
+        self.cards.first.get_by_test_id("add-to-cart").tap()
+
+    @allure.step("Открываем карточку товара {name}")
     def open_product(self, name):
         self.card(name).get_by_test_id("product-name").click()
 
+    @allure.step("Меняем текст цены на число")
     def prices(self):
-        """Цены всех карточек на странице числами: «58 171.00 ₽» -> 58171.0."""
         return [
             float(text.replace("₽", "").replace("\xa0", "").replace(" ", ""))
             for text in self.cards.get_by_test_id("product-price").all_inner_texts()

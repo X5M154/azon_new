@@ -1,8 +1,9 @@
+import allure
+
 from pages.base_page import BasePage
 
 
 class LoginPage(BasePage):
-    """Страница входа: /login."""
 
     url = "/login"
 
@@ -15,8 +16,8 @@ class LoginPage(BasePage):
         self.submit_button = page.get_by_test_id("login-submit")
         self.error = page.get_by_test_id("login-error")
 
+    @allure.step("Вход")
     def login(self, email, password):
-        """Один шаг пользователя: заполнил форму и нажал «Войти»."""
         self.email_input.fill(email)
         self.password_input.fill(password)
         self.submit_button.click()

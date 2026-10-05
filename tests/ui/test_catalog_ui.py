@@ -1,76 +1,86 @@
+import allure
 import pytest
 from playwright.sync_api import expect
 import re
 
-from config.hosts import FRONTEND_URL
+from pages.catalog_page import CatalogPage
+from pages.login_page import LoginPage
 
 pytestmark = [pytest.mark.ui, pytest.mark.products]
 
 
+@allure.epic("Витрина AZON")
+@allure.feature("Страница каталога")
 class TestCatalogUI:
-    def test_catalog_shows_products(self, page):
-        page.goto(FRONTEND_URL)
 
-        expect(page.get_by_test_id("page-title")).to_have_text("Каталог")
-        expect(page.get_by_test_id("catalog-total")).to_contain_text("Найдено товаров")
-        assert page.get_by_test_id("product-card").count() > 0, "На витрине не нашлось ни одного товара"
+    @allure.story("Просмотр витрины")
+    @allure.title("На витрине отображаются товары")
+    @allure.severity(allure.severity_level.CRITICAL)
+    def test_catalog_shows_products(self, page):
+        catalog_page = CatalogPage(page).open()
+
+        expect(catalog_page.title).to_have_text("Каталог")
+        expect(catalog_page.total).to_contain_text("Найдено товаров")
+        assert catalog_page.cards.count() > 0, "На витрине не нашлось ни одного товара"
 
     @pytest.mark.negative
+    @allure.story("Просмотр витрины")
+    @allure.title("Поиск без результата показывает пустую выдачу")
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_search_without_results_shows_empty_state(self, page):
-        page.goto(FRONTEND_URL)
+        catalog_page = CatalogPage(page).open()
 
-        page.get_by_test_id("search-input").fill("такого-товара-точно-нет-12345")
-        page.get_by_test_id("apply-filters").click()
+        catalog_page.search("товара-точно-нет-123")
 
-        expect(page.get_by_test_id("catalog-empty")).to_be_visible()
-        expect(page.get_by_test_id("product-card")).to_have_count(0)
+        expect(catalog_page.empty).to_be_visible()
+        expect(catalog_page.cards).to_have_count(0)
 
+    @allure.story("Просмотр витрины")
+    @allure.title("Отображается выбранная категория товаров")
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_category_filter_narrows_catalog(self, page):
-        page.goto(FRONTEND_URL)
-        all_products = page.get_by_test_id("catalog-total").inner_text()
+        catalog_page = CatalogPage(page).open()
+        all_products = catalog_page.total.inner_text()
 
-        page.get_by_test_id("category-select").select_option(label="Книги")
-        page.get_by_test_id("apply-filters").click()
+        catalog_page.choose_category("Книги")
 
-        expect(page.get_by_test_id("category-select").locator("option:checked")).to_have_text("Книги")
-        assert page.get_by_test_id("catalog-total").inner_text() != all_products
+        expect(catalog_page.category_select.locator("option:checked")).to_have_text("Книги")
+        assert catalog_page.total.inner_text() != all_products
 
-    def test_search_finds_created_product(self, page, created_product):
-        page.goto(FRONTEND_URL)
+    @allure.story("Просмотр витрины")
+    @allure.title("В поиске отображается созданный товар")
+    @allure.severity(allure.severity_level.CRITICAL)
+    def test_search_finds_created_product(self, logged_in_page, created_product):
+        catalog_page = CatalogPage(logged_in_page).open()
 
-        page.get_by_test_id("search-input").fill(created_product.name)
-        page.get_by_test_id("apply-filters").click()
+        catalog_page.search(created_product.name)
 
-        cards = page.get_by_test_id("product-card")
-        expect(cards).to_have_count(1)
-        expect(cards.filter(has_text=created_product.name)).to_be_visible()
+        expect(catalog_page.cards).to_have_count(1)
+        expect(catalog_page.card(created_product.name)).to_be_visible()
 
+    @allure.story("Просмотр витрины")
+    @allure.title("При добавлении товара в корзину неавторизованный пользователь переходит на страницу входа")
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_guest_add_to_cart_goes_to_login(self, page, created_product):
-        page.goto(FRONTEND_URL)
-        page.get_by_test_id("search-input").fill(created_product.name)
-        page.get_by_test_id("apply-filters").click()
+        login_page = LoginPage(page)
+        catalog_page = CatalogPage(page).open()
 
-        page.get_by_test_id("product-card").filter(
-            has_text=created_product.name
-        ).get_by_test_id("add-to-cart").click()
+        catalog_page.search(created_product.name)
+        catalog_page.add_to_cart(created_product.name)
 
         expect(page).to_have_url(re.compile(r"/login"))
-        expect(page.get_by_test_id("login-form")).to_be_visible()
+        expect(login_page.form).to_be_visible()
 
+    @allure.story("Просмотр витрины")
+    @allure.title("Сортировка цены по возрастанию")
+    @allure.severity(allure.severity_level.CRITICAL)
     def test_sorting_by_price_ascending(self, page):
-        page.goto(FRONTEND_URL)
+        catalog_page = CatalogPage(page).open()
 
-        page.get_by_test_id("sort-select").select_option(label="По цене")
-        page.get_by_test_id("order-select").select_option(label="По возрастанию")
-        page.get_by_test_id("apply-filters").click()
+        catalog_page.sort_by("По цене")
 
-        expect(page.get_by_test_id("sort-select").locator("option:checked")).to_have_text("По цене")
+        expect(catalog_page.sort_select.locator("option:checked")).to_have_text("По цене")
 
-        prices = [
-            float(text.replace("₽", "").replace("\xa0", "").replace(" ", ""))
-            for text in page.get_by_test_id("product-card")
-            .get_by_test_id("product-price")
-            .all_inner_texts()
-        ]
+        prices = catalog_page.prices()
 
         assert prices == sorted(prices), f"Цены пришли не по возрастанию: {prices}"

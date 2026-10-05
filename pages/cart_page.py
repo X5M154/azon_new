@@ -4,7 +4,6 @@ from pages.base_page import BasePage
 
 
 class CartPage(BasePage):
-    """Корзина: /cart."""
 
     url = "/cart"
 
@@ -19,10 +18,11 @@ class CartPage(BasePage):
         self.clear_button = page.get_by_test_id("cart-clear")
         self.checkout_button = page.get_by_test_id("checkout-button")
 
+    @allure.step("Выбираем нужный товар в корзине")
     def item(self, name):
-        """Строка корзины с нужным товаром."""
         return self.items.filter(has_text=name)
 
+    @allure.step("Меняем колличество товара в корзине")
     def set_quantity(self, name, quantity):
         row = self.item(name)
         row.get_by_test_id("cart-item-quantity").fill(str(quantity))

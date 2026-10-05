@@ -1,3 +1,5 @@
+import allure
+
 from pages.base_page import BasePage
 
 
@@ -16,6 +18,7 @@ class RegisterPage(BasePage):
         self.submit_button = page.get_by_test_id("register-submit")
         self.error = page.get_by_test_id("login-error")
 
+    @allure.step("Регистрируем покупателя")
     def register(self, full_name, email, password, invite_code=None):
         self.name_input.fill(full_name)
         self.email_input.fill(email)
